@@ -5,6 +5,7 @@ services: mongodb
 deploy:
   provider: heroku
   api_key: "2d789620-e3f1-4d81-a4ea-f79cc5d54c76"
+  app: schedule-me-server
 install:
   - npm install
 script:
