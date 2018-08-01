@@ -30,6 +30,9 @@ app.use(
 
 app.use(express.json());
 
+//new directory called /build, and we need to make sure we’re telling Express to use it
+app.use( express.static( `${__dirname}/../build` ) );
+
 app.get('/api/test', function (req, res) {
   res.json(
     [
@@ -74,6 +77,12 @@ app.get('/api/protected', jwtAuth, (req, res) => {
 app.use('*', (req, res) => {
   return res.status(404).json({ message: 'Not Found' });
 });
+
+// endpoint that lets other routes know how to get to index.html
+const path = require('path')
+app.get('*', (req, res)=>{
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+})
 
 // Referenced by both runServer and closeServer. closeServer
 // assumes runServer has run and set `server` to a server object
