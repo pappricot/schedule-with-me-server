@@ -5,6 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const passport = require('passport');
 require('dotenv').config();
+const {runAgenda, agenda} = require("./agenda");
 
 const { router: usersRouter } = require('./users');
 const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use( express.static( `${__dirname}/../build` ) );
 
 app.get('/api/test', function (req, res) {
+  //agenda.schedule('in 10 seconds', 'print message', {})
   res.json(
     [
       "Bath Blue",
@@ -92,6 +94,7 @@ function runServer(port = PORT) {
   const server = app
     .listen(port, () => {
       console.info(`App listening on port ${server.address().port}`);
+      runAgenda();
     })
     .on('error', err => {
       console.error('Express failed to start');

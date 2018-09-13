@@ -5,8 +5,23 @@ const {Event} = require('./models');
 const config = require('../config');
 const router = express.Router();
 const passport = require('passport');
+const {agenda} = require('../agenda');
+const moment = require('moment');
+
 
 const jwtAuth = passport.authenticate('jwt', {session: false});
+
+function dateForEvent({weekday, hour, timeSlot, weekStartDate}) {
+const date= moment(weekStartDate).zone(0).day(weekday).hour(hour).minute((timeSlot-1)*30).toDate()
+//  console.log('date', date)
+ console.log(weekday)
+ console.log(hour)
+ console.log(timeSlot)
+ console.log(weekStartDate)
+console.log(date)
+  return  date
+
+}
 
 router.post('/', jwtAuth, (req, res, next) => {
   console.log('req.user',req.user);
@@ -14,10 +29,11 @@ router.post('/', jwtAuth, (req, res, next) => {
     id: req.user.id,
     username: req.user.username
   }
+  let allEvents;
   const {timeSlots} = req.body;
   const {name, where, when, weekStartDate} = req.body;
   console.log(weekStartDate, 'weekStartDate')
-  const events = Promise.all(timeSlots.map(ts => Event.create({
+  return Promise.all(timeSlots.map(ts => Event.create({
       weekday: ts.weekday,
       hour: ts.hour,
       timeSlot: ts.timeSlot,
@@ -28,8 +44,12 @@ router.post('/', jwtAuth, (req, res, next) => {
       weekStartDate
   })))
     .then(events => {
-      return res.status(201).json(events);
+      allEvents = events;
+
+      return Promise.all(events.map(event => agenda.schedule(dateForEvent(event), 'notify event start', event)));
+      
     })
+    .then(() => res.status(201).json(allEvents) )
     .catch(err => res.status(500).send(err))
  
 })
